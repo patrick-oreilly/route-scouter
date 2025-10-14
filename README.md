@@ -2,6 +2,9 @@
 
 A conversational buddy to scout cool running trails, just specify a distance and a location!
 
+<img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/950d98d3-1d7c-4b7a-8406-5ada67dd455a" />
+
+
 ## Setup
 1. Clone this repo
 2. Create an `.env` file with your Google cloud project ID, Google application credentials and google maps API key
@@ -11,3 +14,4 @@ A conversational buddy to scout cool running trails, just specify a distance and
 ## Example Usage:
 - "Find me a nice scenic 5k in Galway City"
 - "Surprise me with a cool 10k route anywhere in Galway"
+
