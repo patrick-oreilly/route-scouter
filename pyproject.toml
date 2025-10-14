@@ -1,0 +1,42 @@
+# pyproject.toml for route-scout-agent pyproject
+
+# This section tells uv, or pip how to build the project:
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# This section is for project metadata and dependencies:
+
+[project]
+name = "route-scout-agent"
+version = "1.0"
+authors = [
+    { name = "Patrick O'Reilly", email = "patrick.oreilly04@gmail.com"}
+]
+description = "An AI agent for finding scenic running routes using Google's Agent Development Kit."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+# Project dependencies:
+dependencies = [
+    "langchain",
+    "langchain-google-vertexai",
+    "google-cloud-aiplatform",
+    "google-api-python-client",
+    "google-adk",
+    "googlemaps",
+    "python-dotenv",
+    "setuptools",
+    "pydantic-settings",
+]
+# Optional project URLs:
+[project.urls]
+"Repository" = "https://github.com/patrick-oreilly/route-scouter"
+
+# Entry points for command-line scripts:
+[project.scripts]
+route-scout-agent = "src.main:main"
