@@ -2,47 +2,6 @@ import requests
 from typing import Dict, List, Tuple
 from config import settings
 
-def get_elevation_data(lat: float, lng: float) -> Dict:
-    """
-    Get elevation for a single location.
-    
-    Args:
-        lat: Latitude coordinate
-        lng: Longitude coordinate
-        
-    Returns:
-        dict: Contains 'status', 'elevation' (in meters), and 'resolution'
-    """
-    url = "https://maps.googleapis.com/maps/api/elevation/json"
-    params = {
-        "locations": f"{lat},{lng}",
-        "key": settings.google_maps_api_key
-    }
-    
-    try:
-        response = requests.get(url, params=params)
-        data = response.json()
-        
-        if data['status'] == 'OK':
-            result = data['results'][0]
-            return {
-                "status": "success",
-                "elevation": result['elevation'],
-                "resolution": result['resolution'],
-                "location": result['location']
-            }
-        else:
-            return {
-                "status": "error",
-                "error_message": f"API returned status: {data['status']}"
-            }
-    except Exception as e:
-        return {
-            "status": "error",
-            "error_message": str(e)
-        }
-
-
 def get_elevation_along_path(
     path_points: List[Tuple[float, float]], 
     samples: int,

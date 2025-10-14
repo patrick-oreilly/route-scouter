@@ -1,5 +1,6 @@
 import requests
 from typing import Dict, List, Optional
+from urllib.parse import quote
 from config import settings
 
 def get_running_directions(
@@ -89,3 +90,44 @@ def get_running_directions(
             "status": "error",
             "error_message": str(e)
         }
+
+
+def generate_google_maps_url(
+    origin: str,
+    destination: str,
+    waypoints: List[str] = None,
+    travel_mode: str = "walking"
+) -> Dict:
+    """
+    Generate a Google Maps URL to view the route.
+
+    Args:
+        origin: Starting location
+        destination: Ending location
+        waypoints: Optional list of waypoints
+        travel_mode: driving, walking, bicycling, or transit
+
+    Returns:
+        dict: Contains the Google Maps URL
+    """
+    base_url = "https://www.google.com/maps/dir/"
+
+    # URL encode locations
+    encoded_origin = quote(origin)
+    encoded_destination = quote(destination)
+
+    # Build URL with waypoints
+    if waypoints:
+        encoded_waypoints = "/".join([quote(wp) for wp in waypoints])
+        url = f"{base_url}{encoded_origin}/{encoded_waypoints}/{encoded_destination}"
+    else:
+        url = f"{base_url}{encoded_origin}/{encoded_destination}"
+
+    # Add travel mode parameter
+    url += f"/@?travelmode={travel_mode}"
+
+    return {
+        "status": "success",
+        "maps_url": url,
+        "message": f"Click here to view route in Google Maps: {url}"
+    }

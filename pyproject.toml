@@ -32,6 +32,7 @@ dependencies = [
     "python-dotenv",
     "setuptools",
     "pydantic-settings",
+    "litellm",
 ]
 # Optional project URLs:
 [project.urls]
@@ -39,4 +40,4 @@ dependencies = [
 
 # Entry points for command-line scripts:
 [project.scripts]
-route-scout-agent = "src.main:main"
+route-scout-agent = "route-souter.main:main"
