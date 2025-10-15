@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     google_application_credentials: str
     google_maps_api_key: str
     openweather_api_key: str
-    google_api_key: str
+    gemini_api_key: str
     anthropic_api_key: str
     openai_api_key: str
     grok_api_key: str

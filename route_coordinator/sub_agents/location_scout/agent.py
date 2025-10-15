@@ -1,6 +1,7 @@
 import os
 from google.adk.agents import Agent
 from google.adk.tools import ToolContext
+from google.adk.planners import PlanReActPlanner
 from typing import Dict, List, Optional
 from . import prompt
 from . import tools
@@ -119,6 +120,7 @@ location_scout = Agent(
         "Scouts locations and finds runner-friendly amenities"
         "like water fountains, restrooms, parks, and safe starting points for runs."
     ),
+    planner=PlanReActPlanner(),
     instruction=prompt.LOCATION_SCOUT_PROMPT,
     output_key="location_scouting",
     tools=[scout_running_location, find_runner_amenities, find_running_start_points]
