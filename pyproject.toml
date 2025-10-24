@@ -40,4 +40,8 @@ dependencies = [
 
 # Entry points for command-line scripts:
 [project.scripts]
-route-scout-agent = "route-souter.main:main"
+route-scout-agent = "route_coordinator.main:main"
+
+[tool.setuptools.packages.find]
+where = ["route_coordinator"]
+include = ["route_coordinator*"]

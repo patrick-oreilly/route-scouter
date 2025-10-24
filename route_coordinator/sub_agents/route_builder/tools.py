@@ -1,7 +1,17 @@
 import requests
+import sys
+import os
+import time
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+
 from typing import Dict, List, Optional
 from urllib.parse import quote
 from config import settings
+from logging_config import get_logger
+
+logger = get_logger(__name__)
 
 def get_running_directions(
     origin: str,
@@ -11,43 +21,60 @@ def get_running_directions(
 ) -> Dict:
     """
     Get running directions between locations.
-    
+
     Args:
         origin: Starting location
-        destination: Ending location  
+        destination: Ending location
         waypoints: Optional list of intermediate points
         avoid_highways: Avoid major highways (default True for safety)
-        
+
     Returns:
         dict: Route information optimized for runners
     """
+    start_time = time.time()
+
+    logger.info(
+        "Getting running directions",
+        extra={
+            "agent_name": "route_builder",
+            "origin": origin,
+            "destination": destination,
+            "waypoint_count": len(waypoints) if waypoints else 0,
+            "avoid_highways": avoid_highways
+        }
+    )
+
     url = "https://maps.googleapis.com/maps/api/directions/json"
-    
+
     params = {
         "origin": origin,
         "destination": destination,
         "mode": "walking",  # Walking mode for runners
         "key": settings.google_maps_api_key
     }
-    
+
     if waypoints:
         params["waypoints"] = "|".join(waypoints)
-    
+        logger.debug(f"Using {len(waypoints)} waypoints for route")
+
     if avoid_highways:
         params["avoid"] = "highways"
-    
+
     # Request alternative routes for variety
     params["alternatives"] = "true"
-    
+
     try:
+        logger.debug("Calling Google Maps Directions API")
         response = requests.get(url, params=params)
         data = response.json()
-        
+
+        duration_ms = int((time.time() - start_time) * 1000)
+
         if data['status'] == 'OK':
             # Get the best route (or first alternative)
             route = data['routes'][0]
             legs = route['legs']
-            
+
             # Extract path coordinates
             path_coordinates = []
             for leg in legs:
@@ -60,9 +87,21 @@ def get_running_directions(
                 legs[-1]['end_location']['lat'],
                 legs[-1]['end_location']['lng']
             ))
-            
+
             total_distance = sum(leg['distance']['value'] for leg in legs)
-            
+            total_distance_km = total_distance / 1000
+
+            logger.info(
+                "Running directions retrieved successfully",
+                extra={
+                    "agent_name": "route_builder",
+                    "duration_ms": duration_ms,
+                    "total_distance_km": round(total_distance_km, 2),
+                    "num_routes": len(data['routes']),
+                    "num_coordinates": len(path_coordinates)
+                }
+            )
+
             return {
                 "status": "success",
                 "total_distance": total_distance,
@@ -81,11 +120,32 @@ def get_running_directions(
                 ]
             }
         else:
+            logger.warning(
+                f"Directions API error: {data['status']}",
+                extra={
+                    "agent_name": "route_builder",
+                    "duration_ms": duration_ms,
+                    "api_status": data['status'],
+                    "origin": origin,
+                    "destination": destination
+                }
+            )
             return {
                 "status": "error",
                 "error_message": f"Directions API returned: {data['status']}"
             }
+
     except Exception as e:
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.error(
+            f"Error getting running directions: {str(e)}",
+            exc_info=True,
+            extra={
+                "agent_name": "route_builder",
+                "duration_ms": duration_ms,
+                "error_type": type(e).__name__
+            }
+        )
         return {
             "status": "error",
             "error_message": str(e)
@@ -110,24 +170,60 @@ def generate_google_maps_url(
     Returns:
         dict: Contains the Google Maps URL
     """
-    base_url = "https://www.google.com/maps/dir/"
+    logger.info(
+        "Generating Google Maps URL",
+        extra={
+            "agent_name": "route_builder",
+            "origin": origin,
+            "destination": destination,
+            "waypoint_count": len(waypoints) if waypoints else 0,
+            "travel_mode": travel_mode
+        }
+    )
 
-    # URL encode locations
-    encoded_origin = quote(origin)
-    encoded_destination = quote(destination)
+    try:
+        base_url = "https://www.google.com/maps/dir/"
 
-    # Build URL with waypoints
-    if waypoints:
-        encoded_waypoints = "/".join([quote(wp) for wp in waypoints])
-        url = f"{base_url}{encoded_origin}/{encoded_waypoints}/{encoded_destination}"
-    else:
-        url = f"{base_url}{encoded_origin}/{encoded_destination}"
+        # URL encode locations
+        encoded_origin = quote(origin)
+        encoded_destination = quote(destination)
 
-    # Add travel mode parameter
-    url += f"/@?travelmode={travel_mode}"
+        # Build URL with waypoints
+        if waypoints:
+            encoded_waypoints = "/".join([quote(wp) for wp in waypoints])
+            url = f"{base_url}{encoded_origin}/{encoded_waypoints}/{encoded_destination}"
+            logger.debug(f"Generated URL with {len(waypoints)} waypoints")
+        else:
+            url = f"{base_url}{encoded_origin}/{encoded_destination}"
+            logger.debug("Generated direct route URL")
 
-    return {
-        "status": "success",
-        "maps_url": url,
-        "message": f"Click here to view route in Google Maps: {url}"
-    }
+        # Add travel mode parameter
+        url += f"/@?travelmode={travel_mode}"
+
+        logger.info(
+            "Google Maps URL generated successfully",
+            extra={
+                "agent_name": "route_builder",
+                "url_length": len(url)
+            }
+        )
+
+        return {
+            "status": "success",
+            "maps_url": url,
+            "message": f"Click here to view route in Google Maps: {url}"
+        }
+
+    except Exception as e:
+        logger.error(
+            f"Error generating Google Maps URL: {str(e)}",
+            exc_info=True,
+            extra={
+                "agent_name": "route_builder",
+                "error_type": type(e).__name__
+            }
+        )
+        return {
+            "status": "error",
+            "error_message": str(e)
+        }

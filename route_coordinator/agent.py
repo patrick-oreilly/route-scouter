@@ -25,7 +25,7 @@ workflow = SequentialAgent(
 route_coordinator = LlmAgent(
     name="route_coordinator",
     model="gemini-2.0-flash",
-    tools=[AgentTool(agent=workflow)],
+    tools=[AgentTool(agent=workflow), ],
     description="Coordinates running route scouting.",
     instruction=prompt.ROUTE_COORDINATOR_PROMPT,
 )
