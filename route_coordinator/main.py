@@ -2,22 +2,18 @@
 
 import sys
 import os
+import logging
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from google.adk.sessions import Session
 from .agent import root_agent
-from logging_config import setup_logging, get_logger
+import config
+config.setup_logging()
 
-# Setup logging
-setup_logging(
-    log_level=os.getenv("LOG_LEVEL", "INFO"),
-    log_format=os.getenv("LOG_FORMAT", "console"),
-    enable_file_logging=os.getenv("ENABLE_FILE_LOGGING", "true").lower() in ("true", "1", "yes")
-)
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def main():

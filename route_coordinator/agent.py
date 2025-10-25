@@ -6,35 +6,35 @@ from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
 from . import sub_agents
 from . import prompt
+import logging
+import config
+
+config.setup_logging()
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-GROK_API_KEY = os.getenv("GROK_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+AGENT_NAME="route_coordinator"
 
 location_scout = sub_agents.location_scout.location_scout
-google_search_agent = sub_agents.google_search_agent.google_search_agent
 route_builder = sub_agents.route_builder.route_builder
 elevation_analyst = sub_agents.elevation_analyst.elevation_analyst
 
 
-AGENT_NAME="route_coordinator"
-GEMINI_MODEL="gemini-2.0-flash"
-OPENAI_MODEL= LiteLlm(model="openai/gpt-4.1")
-GROK_MODEL = LiteLlm(model="xai/grok-3-mini-beta")
-MISTRAL_MODEL = LiteLlm(model="ollama_chat/mistral:7b")
+
+workflow = SequentialAgent(
+    name="route_workflow",
+    sub_agents=[location_scout, route_builder, elevation_analyst],
+    description="A workflow that scoutes a given location, then plots a running route and after that analises its elevation",
+)
 
 
 
 route_coordinator = LlmAgent(
     name=AGENT_NAME,
-    model=OPENAI_MODEL,
-    tools=[
-        AgentTool(agent=location_scout),
-        AgentTool(agent=google_search_agent),
-        AgentTool(agent=route_builder),
-        AgentTool(agent=elevation_analyst),
-           ],
+    model=LiteLlm(model=os.getenv("OPENAI_MODEL","GROK_MODEL")),
+    tools=[AgentTool(agent=workflow)],
     description="Coordinates running route scouting.",
     instruction=prompt.ROUTE_COORDINATOR_PROMPT,
 )

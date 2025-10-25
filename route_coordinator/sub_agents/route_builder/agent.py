@@ -8,9 +8,10 @@ from google.adk.models.lite_llm import LiteLlm
 from . import prompt
 from . import tools
 from ..location_scout.tools import geocode_location
+import logging
 
 AGENT_NAME="route_builder"
-MODEL = "gemini-2.0-flash"
+logger = logging.getLogger(__name__)
 
 
 def _generate_loop_waypoints(lat: float, lng: float, distance_km: float, num_points: int = 4) -> List[str]:
@@ -29,6 +30,7 @@ def _generate_loop_waypoints(lat: float, lng: float, distance_km: float, num_poi
     Returns:
         List of waypoint strings in "lat,lng" format
     """
+    logger.info("_generate_loop_waypoints tool used")
     # For a loop with N waypoints, estimate the radius needed
     # Assume the route follows streets (Manhattan distance factor ~1.3)
     # Perimeter = distance_km, so radius ≈ distance_km / (2 * π * 1.3)
@@ -75,6 +77,8 @@ def _generate_out_and_back_waypoint(lat: float, lng: float, distance_km: float, 
     Returns:
         List with a single waypoint string in "lat,lng" format
     """
+    logger.info("_generate_out_and_back_waypoint tool used")
+
     # For out-and-back, the waypoint should be at half the target distance
     # Account for street following (Manhattan distance factor ~1.3)
     manhattan_factor = 1.3
@@ -113,6 +117,8 @@ def find_running_route(
     Returns:
         dict: Route details including path, distance, pace estimates, and Google Maps URL
     """
+    logger.info("find_running_route tool used")
+
     waypoints = None
 
     # Generate loop with waypoints if requested
@@ -223,6 +229,7 @@ def suggest_loop_routes(
     Returns:
         dict: Generated loop route with details
     """
+    logger.info("suggest_loop_routes tool used")
     # Use find_running_route with is_loop=True to generate an actual loop
     return find_running_route(
         start_location=location,
@@ -234,7 +241,7 @@ def suggest_loop_routes(
 
 route_builder = Agent(
     name=AGENT_NAME,
-    model=MODEL,
+    model=LiteLlm(model=os.getenv("OPENAI_MODEL","GROK_MODEL")),
     description=(
         "Finds optimal running routes including loops, out-and-backs,"
         "and point-to-point courses. Calculates distances and provides pace estimates."

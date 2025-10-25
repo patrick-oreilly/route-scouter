@@ -1,13 +1,17 @@
 import os
 from google.adk.agents import Agent
-from google.adk.tools import ToolContext
+from google.adk.tools import ToolContext, AgentTool
 from google.adk.planners import PlanReActPlanner
 from typing import Dict, List, Optional
+from google.adk.models.lite_llm import LiteLlm
 from . import prompt
 from . import tools
+from ..google_search_agent import google_search_agent
+import logging
 
 AGENT_NAME="location_scout"
-MODEL = "gemini-2.0-flash"
+logger = logging.getLogger(__name__)
+
 
 def scout_running_location(
     location_name: str,
@@ -22,6 +26,8 @@ def scout_running_location(
     Returns:
         dict: Location coordinates and details
     """
+    
+    logger.info("scout_running_location tool used")
     result = tools.geocode_location(location_name)
     
     if result['status'] == 'success' and tool_context:
@@ -36,7 +42,7 @@ def scout_running_location(
 def find_runner_amenities(
     latitude: float,
     longitude: float,
-    amenity_type: str = "restroom",
+    amenity_type: str,
     radius: int = 2000,
 ) -> Dict:
     """
@@ -51,6 +57,8 @@ def find_runner_amenities(
     Returns:
         dict: Nearby runner amenities
     """
+
+    logger.info("find_runner_amenities tool used")
     # Map runner-friendly amenity types to Google Places API types
     amenity_mapping = {
         "restroom": "toilet",
@@ -89,6 +97,7 @@ def find_running_start_points(
     Returns:
         dict: Suggested starting points for runs
     """
+    logger.info("find_running_start_points tool used")
     # First geocode the location
     geocode_result = tools.geocode_location(location)
     
@@ -116,7 +125,7 @@ def find_running_start_points(
 
 location_scout = Agent(
     name=AGENT_NAME,
-    model=MODEL,
+    model=LiteLlm(model=os.getenv("OPENAI_MODEL","GROK_MODEL")),
     description=(
         "Scouts locations and finds runner-friendly amenities"
         "like water fountains, restrooms, parks, and safe starting points for runs."
@@ -124,5 +133,5 @@ location_scout = Agent(
     planner=PlanReActPlanner(),
     instruction=prompt.LOCATION_SCOUT_PROMPT,
     output_key="location_scouting",
-    tools=[scout_running_location, find_runner_amenities, find_running_start_points]
+    tools=[scout_running_location, find_runner_amenities, find_running_start_points, AgentTool(agent=google_search_agent)]
 )

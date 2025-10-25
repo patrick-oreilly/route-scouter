@@ -1,6 +1,7 @@
 import os
 import requests
 from typing import Dict, List, Tuple
+import math
 
 STRAVA_TOKEN = os.getenv("STRAVA_ACCESS_TOKEN")
 HIKING_PROJECT_KEY = os.getenv("HIKING_PROJECT_API_KEY")
@@ -28,6 +29,7 @@ def get_popular_running_routes_strava(
     )
     
     url = "https://www.strava.com/api/v3/segments/explore"
+    
     headers = {"Authorization": f"Bearer {STRAVA_TOKEN}"}
     params = {
         "bounds": f"{bounds[0]},{bounds[1]},{bounds[2]},{bounds[3]}",

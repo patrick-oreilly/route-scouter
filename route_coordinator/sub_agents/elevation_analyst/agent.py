@@ -1,11 +1,16 @@
 from google.adk.agents import Agent
 from google.adk.tools import ToolContext
+from google.adk.models.lite_llm import LiteLlm
 from typing import Dict, List
 from . import prompt
 from . import tools
+import os
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 AGENT_NAME="elevation_analyst"
-MODEL = "gemini-2.0-flash"
 
 def analyze_elevation_for_runners(
     path_coordinates: List[List[float]],
@@ -22,6 +27,7 @@ def analyze_elevation_for_runners(
     Returns:
         dict: Elevation analysis with training insights for runners
     """
+    logger.info("analyze_elevation_for_runners tool used")
     # Convert to tuples for the API
     path_tuples = [(coord[0], coord[1]) for coord in path_coordinates]
     
@@ -65,7 +71,7 @@ def analyze_elevation_for_runners(
 
 elevation_analyst = Agent(
     name=AGENT_NAME,
-    model=MODEL,
+    model=LiteLlm(model=os.getenv("OPENAI_MODEL","GROK_MODEL")),
     description=(
         "Analyzes elevation profiles and terrain for running routes." 
         "Specializes in identifying flat routes, hills, and elevation"

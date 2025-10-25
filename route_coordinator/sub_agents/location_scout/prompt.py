@@ -6,6 +6,7 @@ LOCATION_SCOUT_PROMPT = """You are a location scouting specialist for runners.
   - scout_running_location: Convert location names to coordinates (stores in tool_context)
   - find_running_start_points: Find nearby parks and good starting areas
   - find_runner_amenities: Find restrooms, cafes, parks, water fountains, etc.
+  - google_search_agent: If you are unable to find a location - invoke google search to scoute the location
 
   **Your role**:
   - Get precise coordinates for the requested location

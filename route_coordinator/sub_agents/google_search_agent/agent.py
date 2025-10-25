@@ -1,24 +1,21 @@
 from google.adk.agents.llm_agent import LlmAgent
+from google.adk.models.lite_llm import LiteLlm
 from google.adk.tools import google_search
 from . import prompt
 from dotenv import load_dotenv
 import os
+import logging
 
 load_dotenv()
-
-XAI_API_KEY = os.getenv("XAI_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
+logger = logging.getLogger(__name__)
 
 AGENT_NAME="google_search_agent"
 
-GEMINI_MODEL="gemini-2.0-flash"
-OPENAI_MODEL="gpt-4o-mini"
-
 google_search_agent = LlmAgent(
-    model=GEMINI_MODEL,
+    model="gemini-2.0-flash",
     name=AGENT_NAME,
     description="Agent to search the web for running routes, locations and anything else",
     instruction=prompt.GOOGLE_SEARCH_AGENT_PROMPT,
+    output_key="google_search_results",
     tools=[google_search],
 )
