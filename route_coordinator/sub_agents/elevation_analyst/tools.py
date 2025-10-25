@@ -8,9 +8,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirna
 
 from typing import Dict, List, Tuple
 from config import settings
-from logging_config import get_logger
-
-logger = get_logger(__name__)
 
 def get_elevation_along_path(
     path_points: List[Tuple[float, float]],
@@ -28,14 +25,6 @@ def get_elevation_along_path(
     """
     start_time = time.time()
 
-    logger.info(
-        "Getting elevation profile along path",
-        extra={
-            "agent_name": "elevation_analyst",
-            "path_point_count": len(path_points),
-            "samples": samples
-        }
-    )
 
     url = "https://maps.googleapis.com/maps/api/elevation/json"
 
@@ -49,7 +38,6 @@ def get_elevation_along_path(
     }
 
     try:
-        logger.debug("Calling Google Elevation API")
         response = requests.get(url, params=params)
         data = response.json()
 
@@ -78,18 +66,6 @@ def get_elevation_along_path(
             max_elev = max(e['elevation'] for e in elevations)
             min_elev = min(e['elevation'] for e in elevations)
 
-            logger.info(
-                "Elevation profile retrieved successfully",
-                extra={
-                    "agent_name": "elevation_analyst",
-                    "duration_ms": duration_ms,
-                    "total_gain_m": round(total_gain, 2),
-                    "total_loss_m": round(total_loss, 2),
-                    "max_elevation_m": round(max_elev, 2),
-                    "min_elevation_m": round(min_elev, 2),
-                    "elevation_samples": len(elevations)
-                }
-            )
 
             return {
                 "status": "success",
@@ -100,15 +76,6 @@ def get_elevation_along_path(
                 "min_elevation": min_elev
             }
         else:
-            logger.warning(
-                f"Elevation API error: {data['status']}",
-                extra={
-                    "agent_name": "elevation_analyst",
-                    "duration_ms": duration_ms,
-                    "api_status": data['status'],
-                    "samples": samples
-                }
-            )
             return {
                 "status": "error",
                 "error_message": f"API returned status: {data['status']}"
@@ -116,16 +83,7 @@ def get_elevation_along_path(
 
     except Exception as e:
         duration_ms = int((time.time() - start_time) * 1000)
-        logger.error(
-            f"Error getting elevation profile: {str(e)}",
-            exc_info=True,
-            extra={
-                "agent_name": "elevation_analyst",
-                "duration_ms": duration_ms,
-                "error_type": type(e).__name__,
-                "path_point_count": len(path_points)
-            }
-        )
+
         return {
             "status": "error",
             "error_message": str(e)

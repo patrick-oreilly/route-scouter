@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 from . import prompt
 from . import tools
 
+AGENT_NAME="location_scout"
 MODEL = "gemini-2.0-flash"
 
 def scout_running_location(
@@ -114,7 +115,7 @@ def find_running_start_points(
     }
 
 location_scout = Agent(
-    name="location_scout",
+    name=AGENT_NAME,
     model=MODEL,
     description=(
         "Scouts locations and finds runner-friendly amenities"

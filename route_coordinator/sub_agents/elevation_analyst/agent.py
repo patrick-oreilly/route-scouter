@@ -4,6 +4,7 @@ from typing import Dict, List
 from . import prompt
 from . import tools
 
+AGENT_NAME="elevation_analyst"
 MODEL = "gemini-2.0-flash"
 
 def analyze_elevation_for_runners(
@@ -63,7 +64,7 @@ def analyze_elevation_for_runners(
 
 
 elevation_analyst = Agent(
-    name="elevation_analyst",
+    name=AGENT_NAME,
     model=MODEL,
     description=(
         "Analyzes elevation profiles and terrain for running routes." 

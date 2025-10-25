@@ -3,10 +3,13 @@ import math
 from google.adk.agents import Agent
 from google.adk.tools import ToolContext
 from typing import Dict, List, Optional
+from google.adk.models.lite_llm import LiteLlm
+
 from . import prompt
 from . import tools
 from ..location_scout.tools import geocode_location
 
+AGENT_NAME="route_builder"
 MODEL = "gemini-2.0-flash"
 
 
@@ -230,7 +233,7 @@ def suggest_loop_routes(
 
 
 route_builder = Agent(
-    name="route_builder",
+    name=AGENT_NAME,
     model=MODEL,
     description=(
         "Finds optimal running routes including loops, out-and-backs,"

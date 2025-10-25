@@ -8,9 +8,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirna
 
 from typing import Dict, List
 from config import settings
-from logging_config import get_logger
-
-logger = get_logger(__name__)
 
 def geocode_location(location_name: str) -> Dict:
     """
@@ -24,14 +21,6 @@ def geocode_location(location_name: str) -> Dict:
     """
     start_time = time.time()
 
-    logger.info(
-        "Geocoding location",
-        extra={
-            "agent_name": "location_scout",
-            "location_name": location_name
-        }
-    )
-
     url = "https://maps.googleapis.com/maps/api/geocode/json"
     params = {
         "address": location_name,
@@ -39,7 +28,6 @@ def geocode_location(location_name: str) -> Dict:
     }
 
     try:
-        logger.debug("Calling Google Geocoding API")
         response = requests.get(url, params=params)
         data = response.json()
 
@@ -48,14 +36,6 @@ def geocode_location(location_name: str) -> Dict:
         if data['status'] == 'OK':
             result = data['results'][0]
 
-            logger.info(
-                "Location geocoded successfully",
-                extra={
-                    "agent_name": "location_scout",
-                    "duration_ms": duration_ms,
-                    "formatted_address": result['formatted_address']
-                }
-            )
 
             return {
                 "status": "success",
@@ -65,15 +45,6 @@ def geocode_location(location_name: str) -> Dict:
                 "place_id": result.get('place_id')
             }
         else:
-            logger.warning(
-                f"Geocoding failed: {data['status']}",
-                extra={
-                    "agent_name": "location_scout",
-                    "duration_ms": duration_ms,
-                    "api_status": data['status'],
-                    "location_name": location_name
-                }
-            )
             return {
                 "status": "error",
                 "error_message": f"Geocoding failed: {data['status']}"
@@ -81,16 +52,7 @@ def geocode_location(location_name: str) -> Dict:
 
     except Exception as e:
         duration_ms = int((time.time() - start_time) * 1000)
-        logger.error(
-            f"Error geocoding location: {str(e)}",
-            exc_info=True,
-            extra={
-                "agent_name": "location_scout",
-                "duration_ms": duration_ms,
-                "error_type": type(e).__name__,
-                "location_name": location_name
-            }
-        )
+
         return {
             "status": "error",
             "error_message": str(e)
@@ -117,17 +79,6 @@ def find_nearby_places(
     """
     start_time = time.time()
 
-    logger.info(
-        "Finding nearby places",
-        extra={
-            "agent_name": "location_scout",
-            "place_type": place_type,
-            "radius": radius,
-            "lat": lat,
-            "lng": lng
-        }
-    )
-
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     params = {
         "location": f"{lat},{lng}",
@@ -137,7 +88,6 @@ def find_nearby_places(
     }
 
     try:
-        logger.debug("Calling Google Places API")
         response = requests.get(url, params=params)
         data = response.json()
 
@@ -155,31 +105,13 @@ def find_nearby_places(
                 for place in data['results'][:5]  # Top 5 results
             ]
 
-            logger.info(
-                "Nearby places found",
-                extra={
-                    "agent_name": "location_scout",
-                    "duration_ms": duration_ms,
-                    "place_type": place_type,
-                    "places_found": len(places)
-                }
-            )
-
             return {
                 "status": "success",
                 "places": places,
                 "count": len(places)
             }
         else:
-            logger.warning(
-                f"Places API error: {data['status']}",
-                extra={
-                    "agent_name": "location_scout",
-                    "duration_ms": duration_ms,
-                    "api_status": data['status'],
-                    "place_type": place_type
-                }
-            )
+
             return {
                 "status": "error",
                 "error_message": f"Places API returned: {data['status']}"
@@ -187,16 +119,7 @@ def find_nearby_places(
 
     except Exception as e:
         duration_ms = int((time.time() - start_time) * 1000)
-        logger.error(
-            f"Error finding nearby places: {str(e)}",
-            exc_info=True,
-            extra={
-                "agent_name": "location_scout",
-                "duration_ms": duration_ms,
-                "error_type": type(e).__name__,
-                "place_type": place_type
-            }
-        )
+     
         return {
             "status": "error",
             "error_message": str(e)
